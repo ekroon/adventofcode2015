@@ -1,6 +1,5 @@
-// use std::str::FromStr;
-use std::collections::{HashMap, HashSet};
-#[allow(dead_code)]
+#![allow(dead_code)]
+use std::collections::{HashMap};
 use std::fmt::Debug;
 use std::io::{self, BufRead};
 
@@ -30,11 +29,11 @@ impl Instruction {
 fn recurse(
     instructions: &HashMap<String, Instruction>,
     cache: &mut HashMap<String, u16>,
-    wire: &String,
+    wire: String,
     instruction: &Instruction,
 ) -> u16 {
     let op = &instruction.op;
-    let wire1 = if let Some(value) = cache.get(wire) {
+    let wire1 = if let Some(value) = cache.get(&wire) {
         return *value;
     } else if instruction.wire1.is_empty() {
         0
@@ -44,12 +43,12 @@ fn recurse(
             _ => recurse(
                 instructions,
                 cache,
-                &instruction.wire1,
+                instruction.wire1.clone(),
                 instructions.get(&instruction.wire1).unwrap(),
             ),
         }
     };
-    let wire2 = if let Some(value) = cache.get(wire) {
+    let wire2 = if let Some(value) = cache.get(&wire) {
         return *value;
     } else if instruction.wire2.is_empty() {
         0
@@ -59,44 +58,42 @@ fn recurse(
             _ => recurse(
                 instructions,
                 cache,
-                &instruction.wire2,
+                instruction.wire2.clone(),
                 instructions.get(&instruction.wire2).unwrap(),
             ),
         }
     };
-    let result = match op {
+    match op {
         Operation::Assign => {
-            cache.insert(wire.to_string(), wire1);
+            cache.insert(wire, wire1);
             wire1
         }
         Operation::And => {
             let result = wire1 & wire2;
-            cache.insert(wire.to_string(), result);
+            cache.insert(wire, result);
             result
         }
         Operation::Or => {
             let result = wire1 | wire2;
-            cache.insert(wire.to_string(), result);
+            cache.insert(wire, result);
             result
         }
         Operation::Not => {
             let result = !wire1;
-            cache.insert(wire.to_string(), result);
+            cache.insert(wire, result);
             result
         }
         Operation::LShift => {
             let result = wire1 << wire2;
-            cache.insert(wire.to_string(), result);
+            cache.insert(wire, result);
             result
         }
         Operation::RShift => {
             let result = wire1 >> wire2;
-            cache.insert(wire.to_string(), result);
+            cache.insert(wire, result);
             result
         }
-    };
-
-    result
+    }
 }
 
 fn solve() {
@@ -106,7 +103,7 @@ fn solve() {
     instructions = handle.lines().fold(instructions, |mut map, line| {
         let line = line.unwrap();
         let split = line.split_whitespace().collect::<Vec<_>>();
-        match split.as_slice() {
+        match *split.as_slice() {
             [value, "->", wire] => map.insert(
                 wire.to_string(),
                 Instruction::new(Operation::Assign, value.to_string(), "".to_string()),
@@ -142,7 +139,7 @@ fn solve() {
         recurse(
             &instructions,
             &mut cache,
-            &"a".to_string(),
+            "a".to_string(),
             instructions.get("a").unwrap(),
         )
     );
@@ -153,7 +150,7 @@ fn solve() {
         recurse(
             &instructions,
             &mut cache,
-            &"a".to_string(),
+            "a".to_string(),
             instructions.get("a").unwrap(),
         )
     );

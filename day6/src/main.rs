@@ -1,4 +1,4 @@
-#[allow(dead_code)]
+#![allow(dead_code)]
 use std::fmt::Debug;
 use std::io::{self, BufRead};
 use std::str::FromStr;
@@ -52,10 +52,7 @@ impl FromStr for Instruction {
 }
 
 fn parse_instruction(a: String) -> Instruction {
-    // println!("{:?}", a);
-    let instruction = Instruction::from_str(&a).unwrap();
-    // println!("{:?}", instruction);
-    instruction
+    Instruction::from_str(&a).unwrap()
 }
 
 fn solve() {
@@ -98,7 +95,7 @@ fn solve() {
             acc
         });
     let count = acc.0.iter().flatten().filter(|&&l| l == 1).count();
-    let brightness = acc.1.iter().flatten().fold(0, |acc, value| acc + value);
+    let brightness: u32 = acc.1.iter().flatten().sum();
     println!("Lights on: {}", count);
     println!("Brightness: {}", brightness);
 }
