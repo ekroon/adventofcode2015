@@ -1,5 +1,7 @@
 #![allow(dead_code)]
-use std::collections::{HashMap};
+use cached::{cached_key, Cached};
+use cached::UnboundCache;
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::io::{self, BufRead};
 
@@ -14,7 +16,7 @@ enum Operation {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
-struct Instruction {
+pub struct Instruction {
     op: Operation,
     wire1: String,
     wire2: String,
@@ -26,38 +28,35 @@ impl Instruction {
     }
 }
 
+cached_key! {
+RECURSE: UnboundCache<String, u16> = UnboundCache::new();
+Key = { wire };
+
 fn recurse(
     instructions: &HashMap<String, Instruction>,
-    cache: &mut HashMap<String, u16>,
     wire: String,
-    instruction: &Instruction,
-) -> u16 {
+    instruction: &Instruction
+) -> u16 = {
     let op = &instruction.op;
-    let wire1 = if let Some(value) = cache.get(&wire) {
-        return *value;
-    } else if instruction.wire1.is_empty() {
+    let wire1 = if instruction.wire1.is_empty() {
         0
     } else {
         match instruction.wire1.parse::<u16>() {
             Result::Ok(value) => value,
             _ => recurse(
                 instructions,
-                cache,
                 instruction.wire1.clone(),
                 instructions.get(&instruction.wire1).unwrap(),
             ),
         }
     };
-    let wire2 = if let Some(value) = cache.get(&wire) {
-        return *value;
-    } else if instruction.wire2.is_empty() {
+    let wire2 = if instruction.wire2.is_empty() {
         0
     } else {
         match instruction.wire2.parse::<u16>() {
             Result::Ok(value) => value,
             _ => recurse(
                 instructions,
-                cache,
                 instruction.wire2.clone(),
                 instructions.get(&instruction.wire2).unwrap(),
             ),
@@ -65,35 +64,25 @@ fn recurse(
     };
     match op {
         Operation::Assign => {
-            cache.insert(wire, wire1);
             wire1
         }
         Operation::And => {
-            let result = wire1 & wire2;
-            cache.insert(wire, result);
-            result
+            wire1 & wire2
         }
         Operation::Or => {
-            let result = wire1 | wire2;
-            cache.insert(wire, result);
-            result
+            wire1 | wire2
         }
         Operation::Not => {
-            let result = !wire1;
-            cache.insert(wire, result);
-            result
+            !wire1
         }
         Operation::LShift => {
-            let result = wire1 << wire2;
-            cache.insert(wire, result);
-            result
+            wire1 << wire2
         }
         Operation::RShift => {
-            let result = wire1 >> wire2;
-            cache.insert(wire, result);
-            result
+            wire1 >> wire2
         }
     }
+}
 }
 
 fn solve() {
@@ -132,24 +121,24 @@ fn solve() {
         };
         map
     });
-    // println!("{:#?}", instructions);
-    let mut cache = HashMap::new();
-    println!(
-        "wire a value: {}",
+    let result =
         recurse(
             &instructions,
-            &mut cache,
             "a".to_string(),
             instructions.get("a").unwrap(),
-        )
+        );
+    println!(
+        "wire a value: {}", result
     );
-    let mut cache = HashMap::new();
-    cache.insert("b".to_string(), 46065);
+    {
+        let mut cache = RECURSE.lock().unwrap();
+        cache.cache_clear();
+        cache.cache_set("b".to_string(), result);
+    }
     println!(
         "wire a value: {}",
         recurse(
             &instructions,
-            &mut cache,
             "a".to_string(),
             instructions.get("a").unwrap(),
         )
