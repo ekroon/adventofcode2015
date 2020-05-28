@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::io::{self, BufRead};
 
-use cached::{Cached, cached_key};
 use cached::UnboundCache;
+use cached::{cached_key, Cached};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 enum Operation {
