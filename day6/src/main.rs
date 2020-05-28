@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+
 use std::fmt::Debug;
 use std::io::{self, BufRead};
 use std::str::FromStr;
@@ -16,8 +17,8 @@ enum Instruction {
 
 impl Instruction {
     fn create<F>(f: F, begin: &str, end: &str) -> Instruction
-    where
-        F: Fn(usize, usize, usize, usize) -> Self,
+        where
+            F: Fn(usize, usize, usize, usize) -> Self,
     {
         let from: Vec<_> = begin
             .split_terminator(',')

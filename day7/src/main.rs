@@ -1,9 +1,11 @@
 #![allow(dead_code)]
-use cached::{cached_key, Cached};
-use cached::UnboundCache;
+
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::io::{self, BufRead};
+
+use cached::{Cached, cached_key};
+use cached::UnboundCache;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 enum Operation {
@@ -121,15 +123,12 @@ fn solve() {
         };
         map
     });
-    let result =
-        recurse(
-            &instructions,
-            "a".to_string(),
-            instructions.get("a").unwrap(),
-        );
-    println!(
-        "wire a value: {}", result
+    let result = recurse(
+        &instructions,
+        "a".to_string(),
+        instructions.get("a").unwrap(),
     );
+    println!("wire a value: {}", result);
     {
         let mut cache = RECURSE.lock().unwrap();
         cache.cache_clear();
