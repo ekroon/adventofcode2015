@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::io::{stdin, BufRead};
 
-use itertools::Itertools;
+use itertools::{Itertools, MinMaxResult};
 
 fn parse_line(line: &str) -> (&str, &str, u32) {
     let mut parts = line.split_whitespace();
@@ -11,6 +11,10 @@ fn parse_line(line: &str) -> (&str, &str, u32) {
     parts.next();
     let distance = parts.next().unwrap().parse::<u32>().unwrap();
     (from, to, distance)
+}
+
+fn second<A: Clone, B: Copy>(input: &(A, B)) -> B {
+    input.1
 }
 
 fn solve() {
@@ -31,17 +35,19 @@ fn solve() {
         .collect::<HashSet<_>>();
     let total_places = (&places).len();
     let all_routes = places.into_iter().permutations(total_places);
-    let route_distances = all_routes
-        .map(|route| {
-            let r = route.clone().into_iter();
-            let mut r_drop = route.into_iter();
-            r_drop.next();
-            let combined = r.zip(r_drop);
-            combined.map(|s| distances.get(&s).unwrap()).sum::<u32>()
-        })
-        .collect::<Vec<_>>();
-    println!("Part 1: {}", route_distances.iter().min().unwrap(),);
-    println!("Part 2: {}", route_distances.iter().max().unwrap(),);
+    let route_distances = all_routes.map(|route| {
+        let combined = route.as_slice().windows(2);
+        let route_distance = combined
+            .map(|s| distances.get(&(s[0], s[1])).unwrap())
+            .sum::<u32>();
+        (route, route_distance)
+    });
+    if let MinMaxResult::MinMax(min, max) = route_distances.minmax_by_key(second) {
+        println!("Part 1: {} by path {:?}", min.1, min.0);
+        println!("Part 2: {} by path {:?}", max.1, max.0);
+    } else {
+        panic!("No result");
+    }
 }
 
 fn main() {
