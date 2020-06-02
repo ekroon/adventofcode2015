@@ -63,7 +63,6 @@ fn string_successor_impl(s: &str) -> String {
 trait StringSuccessor {
     fn string_successor(&self) -> String;
 }
-
 impl<T> StringSuccessor for T
 where
     T: AsRef<str>,
