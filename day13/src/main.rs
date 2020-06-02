@@ -1,7 +1,7 @@
-use itertools::Itertools;
-use std::collections::hash_map::Keys;
 use std::collections::{HashMap, HashSet};
 use std::io::{stdin, BufRead};
+
+use itertools::Itertools;
 
 fn main() {
     solve();
