@@ -1,6 +1,7 @@
 use scan_fmt::{scan_fmt, scanln_fmt};
 use std::collections::HashSet;
 use std::io::stdin;
+use std::ops::Add;
 
 const REACTION: &str = "{} => {}";
 
@@ -37,7 +38,12 @@ fn solve() {
     let mut result = input.clone();
     let mut steps = 0;
     let mut replacements_used = Vec::<(String, String, usize)>::new();
+    let mut iterations = 0;
     while &result != "e" {
+        if (iterations == 100) {
+            panic!("Solutions not found");
+        }
+        iterations += 1;
         let start = result.clone();
         for (from, to) in &reactions {
             let matches = result.matches(to).count();
